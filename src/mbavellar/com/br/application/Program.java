@@ -1,18 +1,14 @@
 package mbavellar.com.br.application;
 
-import mbavellar.com.br.model.entities.Department;
-import mbavellar.com.br.model.entities.Seller;
-
-import java.util.Date;
+import mbavellar.com.br.model.dao.BaseDao;
+import mbavellar.com.br.model.dao.DaoFactory;
+import mbavellar.com.br.model.dao.SellerDao;
 
 public class Program {
   
   public static void main (String[] args) {
-  
-    Department department = new Department(1, "Books");
-    System.out.println(department);
-    Seller seller = new Seller(
-      21, "Bob", "bob@gmail.com", new Date(), 3000.0, department);
-    System.out.println(seller);
+   
+    SellerDao sellerDao = DaoFactory.createDao(SellerDao.class);
+    System.out.println(sellerDao.findById(3));
   }
 }
