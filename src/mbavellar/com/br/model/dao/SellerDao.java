@@ -8,9 +8,14 @@ import mbavellar.com.br.model.entities.Seller;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SellerDao extends BaseDao<Seller> {
+  
+  Map<Integer, Department> departmentIds = new HashMap<>();
   
   @Override
   public void insert(Seller obj) {
@@ -29,12 +34,11 @@ public class SellerDao extends BaseDao<Seller> {
   
   @Override
   public Seller findById(Integer id) {
-  
+    
     PreparedStatement preparedStatement = null;
     ResultSet resultSet = null;
     try {
-      preparedStatement = conn.prepareStatement(
-        SQLQueryHelper.FIND_SELLER_BY_ID);
+      preparedStatement = conn.prepareStatement(SQLQueryHelper.FIND_SELLER_BY_ID);
       
       preparedStatement.setInt(ParameterIndex.ONE, id);
       
@@ -59,6 +63,31 @@ public class SellerDao extends BaseDao<Seller> {
     return null;
   }
   
+  @Override
+  public List<Seller> findByDepartmentId(final Integer departmentId) {
+  
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    try {
+      preparedStatement = conn.prepareStatement(SQLQueryHelper.FIND_SELLERS_BY_DEPARTMENT_ID);
+      preparedStatement.setInt(ParameterIndex.ONE, departmentId);
+      resultSet = preparedStatement.executeQuery();
+      
+      List<Seller> sellers = new ArrayList<>();
+      while (resultSet.next()) {
+        Department department = getDepartment(resultSet);
+        Seller seller = instantiateSeller(resultSet, department);
+        sellers.add(seller);
+      }
+      return sellers;
+    } catch (SQLException sqle) {
+      throw new DBException(sqle.getMessage());
+    } finally {
+      DB.closeStatement(preparedStatement);
+      DB.closeResultSet(resultSet);
+    }
+  }
+  
   private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException{
     return new Seller(
       rs.getInt("Id"),
@@ -73,5 +102,16 @@ public class SellerDao extends BaseDao<Seller> {
     return new Department(
       rs.getInt("DepartmentId"),
       rs.getString("Department"));
+  }
+  
+  private Department getDepartment(final ResultSet rs) throws SQLException {
+    int departmentId = rs.getInt("DepartmentId");
+    Department dep = departmentIds.get(departmentId);
+    if (dep == null) {
+      dep = instantiateDepartment(rs);
+      departmentIds.put(departmentId, dep);
+    }
+    return dep;
+    
   }
 }

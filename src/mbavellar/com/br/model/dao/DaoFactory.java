@@ -6,10 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DaoFactory {
   
-  public static SellerDao createSellerDao() {
-    return new SellerDao();
-  }
-  
   public static <D> D createDao(Class<D> daoClass) {
     try {
       return daoClass.getDeclaredConstructor().newInstance();

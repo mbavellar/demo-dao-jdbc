@@ -1,6 +1,7 @@
 package mbavellar.com.br.model.dao;
 
 import mbavellar.com.br.model.entities.Department;
+import mbavellar.com.br.model.entities.Seller;
 
 import java.util.List;
 
@@ -28,6 +29,11 @@ public class DepartmentDao extends BaseDao<Department> {
   
   @Override
   public List<Department> findAll() {
+    return null;
+  }
+  
+  @Override
+  public List<Seller> findByDepartmentId(final Integer departmentId) {
     return null;
   }
 }
