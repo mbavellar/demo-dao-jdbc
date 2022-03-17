@@ -5,7 +5,6 @@ import db.DBException;
 import mbavellar.com.br.model.entities.Department;
 import mbavellar.com.br.model.entities.Seller;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,25 +34,14 @@ public class SellerDao extends BaseDao<Seller> {
     ResultSet resultSet = null;
     try {
       preparedStatement = conn.prepareStatement(
-        "SELECT seller.*, department.Name AS Department " +
-            "FROM seller INNER JOIN department " +
-            "ON seller.DepartmentId = Department.Id " +
-            "WHERE seller.Id = ?");
-      preparedStatement.setInt(1, id);
+        SQLQueryHelper.FIND_SELLER_BY_ID);
+      
+      preparedStatement.setInt(ParameterIndex.ONE, id);
+      
       resultSet = preparedStatement.executeQuery();
       if (resultSet.next()) {
-        Department department = new Department(
-          resultSet.getInt("DepartmentId"),
-          resultSet.getString("Department")
-        );
-        Seller seller = new Seller(
-          resultSet.getInt("Id"),
-          resultSet.getString("Name"),
-          resultSet.getString("Email"),
-          resultSet.getDate("BirthDate"),
-          resultSet.getDouble("BaseSalary"),
-          department
-        );
+        Department department = instantiateDepartment(resultSet);
+        Seller seller = instantiateSeller(resultSet, department);
         return seller;
       }
       return null;
@@ -69,5 +57,21 @@ public class SellerDao extends BaseDao<Seller> {
   @Override
   public List<Seller> findAll() {
     return null;
+  }
+  
+  private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException{
+    return new Seller(
+      rs.getInt("Id"),
+      rs.getString("Name"),
+      rs.getString("Email"),
+      rs.getDate("BirthDate"),
+      rs.getDouble("BaseSalary"),
+      dep);
+  }
+  
+  private Department instantiateDepartment(final ResultSet rs) throws SQLException {
+    return new Department(
+      rs.getInt("DepartmentId"),
+      rs.getString("Department"));
   }
 }
