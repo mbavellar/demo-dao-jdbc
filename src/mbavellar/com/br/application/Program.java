@@ -27,9 +27,14 @@ public class Program {
   
     System.out.println("\n==== Test 4 : Insert New Seller ====");
     Seller seller = new Seller(
-      null, "Greg", "greg@gmail.com", new Date(), 4000.0,
+      10, "Greg", "greg@gmail.com", new Date(), 4000.0,
       new Department(1, "Computers"));
-    sellerDao.insert(seller);
+    //sellerDao.insert(seller);
+    //System.out.println(seller.getId());
+  
+    System.out.println("\n==== Test 5 : Update Seller ====");
+      seller.setDepartment(new Department(2, "Electronics"));
+    sellerDao.update(seller);
     System.out.println(seller.getId());
     
   }

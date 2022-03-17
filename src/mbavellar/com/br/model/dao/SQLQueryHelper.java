@@ -23,5 +23,9 @@ public class SQLQueryHelper {
     "INSERT INTO seller (Name, Email, BirthDate, BaseSalary, DepartmentId) " +
     "VALUES (?, ?, ?, ?, ?);";
   
+  public static final String UPDATE =
+     "UPDATE seller SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? " +
+     "WHERE Id = ?";
+  
   private SQLQueryHelper() {}
 }

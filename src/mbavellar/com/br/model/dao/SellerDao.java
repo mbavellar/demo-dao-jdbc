@@ -27,7 +27,7 @@ public class SellerDao extends BaseDao<Seller> {
   
   @Override
   public void update(Seller obj) {
-  
+    executeUpdate(obj, SQLQueryHelper.UPDATE);
   }
   
   @Override
@@ -106,19 +106,26 @@ public class SellerDao extends BaseDao<Seller> {
       preparedStatement.setDate(ParameterIndex.THREE, new java.sql.Date(obj.getBirthDate().getTime()));
       preparedStatement.setDouble(ParameterIndex.FOUR, obj.getBaseSalary());
       preparedStatement.setInt(ParameterIndex.FIVE, obj.getDepartment().getId());
-      
+      if (obj.getId() != null) {
+        preparedStatement.setInt(ParameterIndex.SIX, obj.getId());
+        preparedStatement.executeUpdate();
+        return;
+      }
       if (preparedStatement.executeUpdate() > 0) {
         ResultSet resultSet = preparedStatement.getGeneratedKeys();
         if (resultSet.next()) {
           obj.setId(resultSet.getInt(1));
         }
         DB.closeResultSet(resultSet);
-      } else {
-        throw new DBException("Unexpected Error! No Rows Affected!");
       }
-    } catch (SQLException sqle) {
+      else {
+          throw new DBException("Unexpected Error! No Rows Affected!");
+      }
+    }
+    catch (SQLException sqle) {
       throw new DBException(sqle.getMessage());
-    } finally {
+    }
+    finally {
       DB.closeStatement(preparedStatement);
     }
   }
