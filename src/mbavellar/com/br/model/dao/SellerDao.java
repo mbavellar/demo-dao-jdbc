@@ -10,6 +10,7 @@ import mbavellar.com.br.model.entities.Seller;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ public class SellerDao extends BaseDao<Seller> {
   
   @Override
   public void insert(Seller obj) {
-  
+    executeUpdate(obj, SQLQueryHelper.INSERT);
   }
   
   @Override
@@ -96,7 +97,33 @@ public class SellerDao extends BaseDao<Seller> {
     return dep;
   }
   
-  private final List<Seller> getSellers (final Integer departmentId, String query) {
+  private void executeUpdate(Seller obj, final String query) {
+    PreparedStatement preparedStatement = null;
+    try {
+      preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+      preparedStatement.setString(ParameterIndex.ONE, obj.getName());
+      preparedStatement.setString(ParameterIndex.TWO, obj.getEmail());
+      preparedStatement.setDate(ParameterIndex.THREE, new java.sql.Date(obj.getBirthDate().getTime()));
+      preparedStatement.setDouble(ParameterIndex.FOUR, obj.getBaseSalary());
+      preparedStatement.setInt(ParameterIndex.FIVE, obj.getDepartment().getId());
+      
+      if (preparedStatement.executeUpdate() > 0) {
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+        if (resultSet.next()) {
+          obj.setId(resultSet.getInt(1));
+        }
+        DB.closeResultSet(resultSet);
+      } else {
+        throw new DBException("Unexpected Error! No Rows Affected!");
+      }
+    } catch (SQLException sqle) {
+      throw new DBException(sqle.getMessage());
+    } finally {
+      DB.closeStatement(preparedStatement);
+    }
+  }
+  
+  private final List<Seller> getSellers (final Integer departmentId, final String query) {
     PreparedStatement preparedStatement = null;
     ResultSet resultSet = null;
     try {
