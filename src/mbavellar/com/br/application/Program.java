@@ -36,6 +36,8 @@ public class Program {
       seller.setDepartment(new Department(2, "Electronics"));
     sellerDao.update(seller);
     System.out.println(seller.getId());
-    
+  
+    System.out.println("\n==== Test 6 : Delete Seller ====");
+    sellerDao.deleteById(11);
   }
 }

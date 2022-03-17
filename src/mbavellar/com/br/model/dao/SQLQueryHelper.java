@@ -27,5 +27,8 @@ public class SQLQueryHelper {
      "UPDATE seller SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? " +
      "WHERE Id = ?";
   
+  public static final String DELETE =
+     "DELETE FROM seller WHERE Id = ?";
+  
   private SQLQueryHelper() {}
 }

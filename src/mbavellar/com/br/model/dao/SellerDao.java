@@ -32,7 +32,18 @@ public class SellerDao extends BaseDao<Seller> {
   
   @Override
   public void deleteById(Integer id) {
-  
+    PreparedStatement preparedStatement = null;
+    try {
+      preparedStatement = conn.prepareStatement(SQLQueryHelper.DELETE);
+      preparedStatement.setInt(ParameterIndex.ONE, id);
+      preparedStatement.executeUpdate();
+    }
+    catch (SQLException sqle) {
+      throw new DBException(sqle.getMessage());
+    }
+    finally {
+      DB.closeStatement(preparedStatement);
+    }
   }
   
   @Override
