@@ -59,4 +59,9 @@ public class DB {
       }
     }
   }
+  
+  public static void closeStatementAndResultSet(PreparedStatement preSt, ResultSet rs) {
+    closeStatement(preSt);
+    closeResultSet(rs);
+  }
 }

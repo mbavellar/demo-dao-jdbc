@@ -1,6 +1,9 @@
 package mbavellar.com.br.model.dao;
 
-public class SQLQueryHelper {
+public class SqlSellerQuery {
+  
+  private SqlSellerQuery() {}
+  
   public static final String FIND_SELLER_BY_ID =
     "SELECT seller.*, department.Name AS Department " +
     "FROM seller INNER JOIN department " +
@@ -19,16 +22,14 @@ public class SQLQueryHelper {
     "ON seller.DepartmentId = department.Id " +
     "ORDER BY Name";
   
-  public static final String INSERT =
+  public static final String INSERT_SELLER =
     "INSERT INTO seller (Name, Email, BirthDate, BaseSalary, DepartmentId) " +
     "VALUES (?, ?, ?, ?, ?);";
   
-  public static final String UPDATE =
+  public static final String UPDATE_SELLER_BY_ID =
      "UPDATE seller SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? " +
      "WHERE Id = ?";
   
-  public static final String DELETE =
+  public static final String DELETE_SELLER_BY_ID =
      "DELETE FROM seller WHERE Id = ?";
-  
-  private SQLQueryHelper() {}
 }

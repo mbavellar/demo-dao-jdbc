@@ -1,7 +1,5 @@
 package mbavellar.com.br.model.dao;
 
-import db.DB;
-
 import java.lang.reflect.InvocationTargetException;
 
 public class DaoFactory {

@@ -2,6 +2,7 @@ package mbavellar.com.br.application;
 
 import mbavellar.com.br.model.dao.DaoFactory;
 import mbavellar.com.br.model.dao.SellerDao;
+import mbavellar.com.br.model.dao.SqlSellerQuery;
 import mbavellar.com.br.model.entities.Department;
 import mbavellar.com.br.model.entities.Seller;
 
@@ -15,14 +16,14 @@ public class Program {
     SellerDao sellerDao = DaoFactory.createDao(SellerDao.class);
     
     System.out.println("==== Test 1: Seller findById ====");
-    System.out.println(sellerDao.findById(3));
+    System.out.println(sellerDao.findById(3, null, null));
   
     System.out.println("\n==== Test 2 : Seller findByDepartmentId ====");
-    List<Seller> sellers = sellerDao.findByDepartmentId(2);
+    List<Seller> sellers = sellerDao.findByDepartmentId(null, null,2);
     sellers.forEach(System.out::println);
   
     System.out.println("\n==== Test 3 : Seller findAll ====");
-    sellers = sellerDao.findAll();
+    sellers = sellerDao.findAll(null, null);
     sellers.forEach(System.out::println);
   
     System.out.println("\n==== Test 4 : Insert New Seller ====");
@@ -34,10 +35,10 @@ public class Program {
   
     System.out.println("\n==== Test 5 : Update Seller ====");
       seller.setDepartment(new Department(2, "Electronics"));
-    sellerDao.update(seller);
+    sellerDao.update(seller, null);
     System.out.println(seller.getId());
   
     System.out.println("\n==== Test 6 : Delete Seller ====");
-    sellerDao.deleteById(11);
+    sellerDao.deleteById(10, SqlSellerQuery.DELETE_SELLER_BY_ID, null);
   }
 }

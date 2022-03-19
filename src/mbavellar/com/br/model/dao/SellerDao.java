@@ -21,65 +21,45 @@ public class SellerDao extends BaseDao<Seller> {
   Map<Integer, Department> departmentIds = new HashMap<>();
   
   @Override
-  public void insert(Seller obj) {
-    executeUpdate(obj, SQLQueryHelper.INSERT);
+  public void insert(Seller obj, PreparedStatement preSt) {
+    executeUpdate(obj, SqlSellerQuery.INSERT_SELLER, preSt);
   }
   
   @Override
-  public void update(Seller obj) {
-    executeUpdate(obj, SQLQueryHelper.UPDATE);
+  public void update(Seller obj, PreparedStatement preSt) {
+    executeUpdate(obj, SqlSellerQuery.UPDATE_SELLER_BY_ID, preSt);
   }
   
   @Override
-  public void deleteById(Integer id) {
-    PreparedStatement preparedStatement = null;
-    try {
-      preparedStatement = conn.prepareStatement(SQLQueryHelper.DELETE);
-      preparedStatement.setInt(ParameterIndex.ONE, id);
-      preparedStatement.executeUpdate();
-    }
-    catch (SQLException sqle) {
-      throw new DBException(sqle.getMessage());
-    }
-    finally {
-      DB.closeStatement(preparedStatement);
-    }
-  }
-  
-  @Override
-  public Seller findById(Integer id) {
+  public Seller findById(Integer id, PreparedStatement preSt, ResultSet rs) {
     
-    PreparedStatement preparedStatement = null;
-    ResultSet resultSet = null;
     try {
-      preparedStatement = conn.prepareStatement(SQLQueryHelper.FIND_SELLER_BY_ID);
+      preSt = conn.prepareStatement(SqlSellerQuery.FIND_SELLER_BY_ID);
+      preSt.setInt(ParameterIndex.ONE, id);
       
-      preparedStatement.setInt(ParameterIndex.ONE, id);
-      
-      resultSet = preparedStatement.executeQuery();
-      if (resultSet.next()) {
-        Department department = instantiateDepartment(resultSet);
-        Seller seller = instantiateSeller(resultSet, department);
+      rs = preSt.executeQuery();
+      if (rs.next()) {
+        Department department = instantiateDepartment(rs);
+        Seller seller = instantiateSeller(rs, department);
         return seller;
       }
-      return null;
+      throw new DBException("Seller not found!");
       
-    } catch (SQLException sqle) {
-      throw new DBException(sqle.getMessage());
+    } catch (SQLException e) {
+      throw new DBException(e.getMessage());
     } finally {
-      DB.closeStatement(preparedStatement);
-      DB.closeResultSet(resultSet);
+      DB.closeStatementAndResultSet(preSt, rs);
     }
   }
   
   @Override
-  public List<Seller> findAll() {
-    return getSellers(null, SQLQueryHelper.FIND_ALL_SELLERS);
+  public List<Seller> findAll(PreparedStatement preSt, ResultSet rs) {
+    return getSellers(preSt, rs,null, SqlSellerQuery.FIND_ALL_SELLERS);
   }
   
-  @Override
-  public List<Seller> findByDepartmentId(final Integer departmentId) {
-    return getSellers(departmentId, SQLQueryHelper.FIND_SELLERS_BY_DEPARTMENT_ID);
+  public List<Seller> findByDepartmentId(
+    PreparedStatement preSt, ResultSet rs, Integer departmentId) {
+    return getSellers(preSt, rs, departmentId, SqlSellerQuery.FIND_SELLERS_BY_DEPARTMENT_ID);
   }
   
   private Seller instantiateSeller(ResultSet rs, Department department) throws SQLException{
@@ -108,22 +88,21 @@ public class SellerDao extends BaseDao<Seller> {
     return dep;
   }
   
-  private void executeUpdate(Seller obj, final String query) {
-    PreparedStatement preparedStatement = null;
+  private void executeUpdate(Seller obj, final String query, PreparedStatement preSt) {
     try {
-      preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-      preparedStatement.setString(ParameterIndex.ONE, obj.getName());
-      preparedStatement.setString(ParameterIndex.TWO, obj.getEmail());
-      preparedStatement.setDate(ParameterIndex.THREE, new java.sql.Date(obj.getBirthDate().getTime()));
-      preparedStatement.setDouble(ParameterIndex.FOUR, obj.getBaseSalary());
-      preparedStatement.setInt(ParameterIndex.FIVE, obj.getDepartment().getId());
+      preSt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+      preSt.setString(ParameterIndex.ONE, obj.getName());
+      preSt.setString(ParameterIndex.TWO, obj.getEmail());
+      preSt.setDate(ParameterIndex.THREE, new java.sql.Date(obj.getBirthDate().getTime()));
+      preSt.setDouble(ParameterIndex.FOUR, obj.getBaseSalary());
+      preSt.setInt(ParameterIndex.FIVE, obj.getDepartment().getId());
       if (obj.getId() != null) {
-        preparedStatement.setInt(ParameterIndex.SIX, obj.getId());
-        preparedStatement.executeUpdate();
+        preSt.setInt(ParameterIndex.SIX, obj.getId());
+        preSt.executeUpdate();
         return;
       }
-      if (preparedStatement.executeUpdate() > 0) {
-        ResultSet resultSet = preparedStatement.getGeneratedKeys();
+      if (preSt.executeUpdate() > 0) {
+        ResultSet resultSet = preSt.getGeneratedKeys();
         if (resultSet.next()) {
           obj.setId(resultSet.getInt(1));
         }
@@ -133,37 +112,35 @@ public class SellerDao extends BaseDao<Seller> {
           throw new DBException("Unexpected Error! No Rows Affected!");
       }
     }
-    catch (SQLException sqle) {
-      throw new DBException(sqle.getMessage());
+    catch (SQLException e) {
+      throw new DBException(e.getMessage());
     }
     finally {
-      DB.closeStatement(preparedStatement);
+      DB.closeStatement(preSt);
     }
   }
   
-  private final List<Seller> getSellers (final Integer departmentId, final String query) {
-    PreparedStatement preparedStatement = null;
-    ResultSet resultSet = null;
+  private List<Seller> getSellers (PreparedStatement preSt, ResultSet rs,
+    final Integer departmentId, final String query) {
     try {
-      preparedStatement = conn.prepareStatement(query);
+      preSt = conn.prepareStatement(query);
       
       if (departmentId != null)
-        preparedStatement.setInt(ParameterIndex.ONE, departmentId);
-      
-      resultSet = preparedStatement.executeQuery();
+        preSt.setInt(ParameterIndex.ONE, departmentId);
+  
+      rs = preSt.executeQuery();
     
       List<Seller> sellers = new ArrayList<>();
-      while (resultSet.next()) {
-        Department department = getDepartment(resultSet);
-        Seller seller = instantiateSeller(resultSet, department);
+      while (rs.next()) {
+        Department department = getDepartment(rs);
+        Seller seller = instantiateSeller(rs, department);
         sellers.add(seller);
       }
       return sellers;
-    } catch (SQLException sqle) {
-      throw new DBException(sqle.getMessage());
+    } catch (SQLException e) {
+      throw new DBException(e.getMessage());
     } finally {
-      DB.closeStatement(preparedStatement);
-      DB.closeResultSet(resultSet);
+      DB.closeStatementAndResultSet(preSt, rs);
     }
   }
 }
